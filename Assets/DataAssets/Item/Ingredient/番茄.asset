@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d7482ecb2746f940923a9280c7ac396, type: 3}
   m_Name: "\u756A\u8304"
   m_EditorClassIdentifier: 
-  ingredientName: "\u756A\u8304"
+  itemName: "\u756A\u8304"
   buyPrice: 10
-  icon: {fileID: 0}
+  image: {fileID: -2087863082, guid: 0334bcb500981034698de16c35128ef5, type: 3}
+  itemHeld: 1
+  itemInfo: 

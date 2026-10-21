@@ -1,35 +1,35 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;                          // ← 关键：引入 TextMeshPro 命名空间
+using TMPro;
 using System.Collections.Generic;
 
 public class UIController : MonoBehaviour
 {
     // 引用
     public KitchenSystem kitchen;
-    public TMP_Text resultText;        // ← 改成 TMP_Text
-    public GameObject ingredientButtonPrefab;
+    public TMP_Text resultText;
+    public GameObject ingredientButtonPrefab; // 建议也改名为 itemButtonPrefab
     public Transform buttonContainer;
 
-    // 当前玩家已选的食材
-    private List<IngredientData> selectedIngredients = new List<IngredientData>();
+    // 当前玩家已选的物品 (改成 ItemData)
+    private List<ItemData> selectedItems = new List<ItemData>();
 
-    // 所有可用的食材
-    public List<IngredientData> allIngredients;
+    // 所有可用的物品 (改成 ItemData)
+    public List<ItemData> allItems;
 
     void Start()
     {
-        // 如果 allIngredients 为空，报个错提醒自己
-        if (allIngredients == null || allIngredients.Count == 0)
+        // 如果 allItems 为空，报个错提醒自己
+        if (allItems == null || allItems.Count == 0)
         {
-            Debug.LogError("请先在 Inspector 里给 All Ingredients 列表添加食材！");
+            Debug.LogError("请先在 Inspector 里给 All Items 列表添加物品！");
             return;
         }
 
         // 如果按钮预制体没拖，报错提醒
         if (ingredientButtonPrefab == null)
         {
-            Debug.LogError("请先拖入 Ingredient Button Prefab！");
+            Debug.LogError("请先拖入 Item Button Prefab！");
             return;
         }
 
@@ -40,8 +40,8 @@ public class UIController : MonoBehaviour
             return;
         }
 
-        // 为每个食材动态生成按钮
-        foreach (IngredientData ingredient in allIngredients)
+        // 为每个物品动态生成按钮
+        foreach (ItemData item in allItems)
         {
             GameObject btnObj = Instantiate(ingredientButtonPrefab, buttonContainer);
             Button btn = btnObj.GetComponent<Button>();
@@ -50,7 +50,7 @@ public class UIController : MonoBehaviour
 
             if (btnText != null)
             {
-                btnText.text = ingredient.ingredientName;
+                btnText.text = item.itemName; // 使用 itemName
             }
             else
             {
@@ -58,29 +58,29 @@ public class UIController : MonoBehaviour
             }
 
             // 绑定点击事件
-            btn.onClick.AddListener(() => AddIngredient(ingredient));
+            btn.onClick.AddListener(() => AddItem(item));
         }
     }
 
-    // 添加食材到选中列表
-    public void AddIngredient(IngredientData ingredient)
+    // 添加物品到选中列表 (修复了参数类型和变量名)
+    public void AddItem(ItemData item)
     {
-        if (!selectedIngredients.Contains(ingredient))
+        if (!selectedItems.Contains(item))
         {
-            selectedIngredients.Add(ingredient);
-            Debug.Log("已选：" + ingredient.ingredientName);
+            selectedItems.Add(item);
+            Debug.Log("已选：" + item.itemName);
             UpdateSelectedDisplay();
         }
         else
         {
-            Debug.Log(ingredient.ingredientName + " 已经选过了");
+            Debug.Log(item.itemName + " 已经选过了");
         }
     }
 
-    // 清空已选食材
+    // 清空已选物品
     public void ClearSelection()
     {
-        selectedIngredients.Clear();
+        selectedItems.Clear();
         Debug.Log("已清空选择");
         UpdateSelectedDisplay();
     }
@@ -88,18 +88,19 @@ public class UIController : MonoBehaviour
     // 调用厨房系统匹配菜谱
     public void OnCookButtonClick()
     {
-        if (selectedIngredients.Count == 0)
+        if (selectedItems.Count == 0)
         {
-            resultText.text = "请先选择食材！";
+            resultText.text = "请先选择物品！";
             return;
         }
 
-        RecipeData matchedRecipe = kitchen.MatchRecipe(selectedIngredients);
+        // 注意：这里 MatchRecipe 方法的参数类型可能也需要改成 List<ItemData>
+        RecipeData matchedRecipe = kitchen.MatchRecipe(selectedItems);
 
         if (matchedRecipe != null)
         {
-            // 新增：检查库存是否足够
-            if (GameDataManager.Instance.HasIngredients(matchedRecipe))
+            // 检查库存是否足够
+            if (GameDataManager.Instance.HasIngredients(matchedRecipe)) // 如果 GameDataManager 里也是 ItemData，这里可能也要改
             {
                 // 消耗食材
                 GameDataManager.Instance.ConsumeIngredients(matchedRecipe);
@@ -114,9 +115,9 @@ public class UIController : MonoBehaviour
             else
             {
                 resultText.text = "食材不够！需要：";
-                foreach (IngredientData ing in matchedRecipe.ingredients)
+                foreach (ItemData ing in matchedRecipe.item) // 这里也要改成 ItemData
                 {
-                    resultText.text += "\n" + ing.ingredientName + " x1";
+                    resultText.text += "\n" + ing.itemName + " x1";
                 }
             }
         }
@@ -126,19 +127,18 @@ public class UIController : MonoBehaviour
         }
     }
 
-    // 显示已选食材
+    // 显示已选物品
     private void UpdateSelectedDisplay()
     {
-        if (selectedIngredients.Count == 0)
+        if (selectedItems.Count == 0)
         {
-            // 可以留空或者显示提示
             return;
         }
 
         string names = "";
-        foreach (IngredientData ing in selectedIngredients)
+        foreach (ItemData item in selectedItems)
         {
-            names += ing.ingredientName + " ";
+            names += item.itemName + " ";
         }
         Debug.Log("当前已选：" + names);
     }

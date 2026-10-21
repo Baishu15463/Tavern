@@ -7,10 +7,13 @@ public class GameDataManager : MonoBehaviour
     public static GameDataManager Instance;
 
     public int money = 0;
-    public Dictionary<string, int> inventory = new Dictionary<string, int>(); //食材ID和数量
+    // 物品ID（名字）和数量
+    public Dictionary<string, int> inventory = new Dictionary<string, int>();
 
-    public List<IngredientData> startIngredients; //初始食材列表
-    public List<int> startAmounts; //初始食材数量列表
+    // 初始物品列表 (改成 ItemData)
+    public List<ItemData> startItems;
+    // 初始物品数量列表
+    public List<int> startAmounts;
 
     private void Awake()
     {
@@ -22,31 +25,39 @@ public class GameDataManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return; // 如果已经有实例了，销毁自己并直接返回，不再初始化
         }
+
         InitializeInventory();
     }
 
     void InitializeInventory()
     {
-        if (inventory.Count == 0 && startIngredients != null)
+        // 增加 startAmounts != null 的判断，防止空引用报错
+        if (inventory.Count == 0 && startItems != null && startAmounts != null)
         {
-            for (int i = 0; i < startIngredients.Count; i++)
+            for (int i = 0; i < startItems.Count; i++)
             {
-                IngredientData ing = startIngredients[i];
+                ItemData item = startItems[i];
+                // 防止 startAmounts 数量比 startItems 少导致越界
                 int amount = (i < startAmounts.Count) ? startAmounts[i] : 0;
-                if (amount > 0) 
+
+                if (amount > 0)
                 {
-                    inventory[ing.ingredientName] = amount;
+                    inventory[item.itemName] = amount;
                 }
             }
         }
     }
+
     // 检查玩家是否拥有制作指定食谱所需的所有食材
     public bool HasIngredients(RecipeData recipe)
     {
-        foreach (IngredientData required in recipe.ingredients)
+        if (recipe == null || recipe.item == null) return false;
+
+        foreach (ItemData required in recipe.item) // 改成 ItemData
         {
-            string id = required.ingredientName;
+            string id = required.itemName; // 改成 itemName
             if (!inventory.ContainsKey(id) || inventory[id] <= 0)
             {
                 return false;
@@ -58,24 +69,28 @@ public class GameDataManager : MonoBehaviour
     // 扣除制作指定食谱所需的所有食材
     public void ConsumeIngredients(RecipeData recipe)
     {
-        foreach (IngredientData required in recipe.ingredients)
+        if (recipe == null || recipe.item == null) return;
+
+        foreach (ItemData required in recipe.item) // 改成 ItemData
         {
-            string id = required.ingredientName;
+            string id = required.itemName; // 改成 itemName
             if (inventory.ContainsKey(id))
             {
                 inventory[id]--;
                 if (inventory[id] < 0)
                 {
-                    inventory[id] = 0; // 确保数量不会为负数
+                    inventory[id] = 0;
                 }
             }
         }
     }
 
-    //添加食材
-    public void AddIngredient(IngredientData ingredient, int amount)
+    // 添加物品
+    public void AddItem(ItemData itemData, int amount) // 方法名也建议改成 AddItem
     {
-        string id = ingredient.ingredientName;
+        if (itemData == null) return;
+
+        string id = itemData.itemName; // 改成 itemName
         if (inventory.ContainsKey(id))
         {
             inventory[id] += amount;
@@ -86,10 +101,12 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    // 获取指定食材的数量
-    public int GetIngredientCount(IngredientData ingredient)
+    // 获取指定物品的数量
+    public int GetItemCount(ItemData item) // 方法名也建议改成 GetItemCount
     {
-        string id = ingredient.ingredientName;
+        if (item == null) return 0;
+
+        string id = item.itemName; // 改成 itemName
         return inventory.ContainsKey(id) ? inventory[id] : 0;
     }
 
@@ -102,9 +119,9 @@ public class GameDataManager : MonoBehaviour
     //扣钱
     public bool RemoveMoney(int amount)
     {
-        if(money >= amount)
+        if (money >= amount)
         {
-            money-= amount;
+            money -= amount;
             return true;
         }
         else
@@ -113,5 +130,3 @@ public class GameDataManager : MonoBehaviour
         }
     }
 }
-
-

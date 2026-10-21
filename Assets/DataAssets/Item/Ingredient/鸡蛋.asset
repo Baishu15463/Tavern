@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d7482ecb2746f940923a9280c7ac396, type: 3}
   m_Name: "\u9E21\u86CB"
   m_EditorClassIdentifier: 
-  ingredientName: "\u9E21\u86CB"
+  itemName: "\u9E21\u86CB"
   buyPrice: 15
-  icon: {fileID: 0}
+  image: {fileID: 1089217193, guid: 0d6302169d08eb74bace6870372e7795, type: 3}
+  itemHeld: 1
+  itemInfo: "\u4E00\u4E2A\u65B0\u9C9C\u7684\u9E21\u86CB"
