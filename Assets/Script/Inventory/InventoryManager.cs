@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,55 +5,65 @@ using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
-    static InventoryManager instance;
+    public static InventoryManager Instance;
 
-    public Inventory myBag; 
     public GameObject slotGrid;
-    public Slot sloPrefab;
-    public Text itemInfromation;
+    public Slot slotPrefab;
+    public TMP_Text itemInformation;
 
+    // 用于在列表中查找对应的 ItemData SO模板
+    public List<ItemData> allItemsDatabase;
+
+    private void Awake()
+    {
+        if (Instance != null) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     private void OnEnable()
     {
         RefreshItem();
-        instance.itemInfromation.text = "";
+        if (itemInformation != null) itemInformation.text = "";
     }
 
     public static void UpdateItemInformation(string itemInfo)
     {
-        instance.itemInfromation.text = itemInfo;
+        if (Instance != null && Instance.itemInformation != null)
+            Instance.itemInformation.text = itemInfo;
     }
 
-    void Awake()
+    public static void RefreshItem()
     {
-        if (instance != null)
+        if (Instance == null || Instance.slotGrid == null) return;
+
+        // 1. 清空旧格子
+        foreach (Transform child in Instance.slotGrid.transform)
         {
-            Destroy(gameObject);
-            return;
+            Destroy(child.gameObject);
         }
-        instance = this;
+
+        // 2. 遍历字典（真实库存）
+        foreach (var kvp in GameDataManager.Instance.inventory)
+        {
+            string itemName = kvp.Key;
+            int count = kvp.Value;
+
+            if (count <= 0) continue;
+
+            // 3. 去数据库找图标
+            ItemData data = Instance.allItemsDatabase.Find(x => x.itemName == itemName);
+            if (data != null)
+            {
+                CreateNewItem(data, count);
+            }
+        }
     }
 
-    public static void  CreateNewItem(ItemData item)//用于创建新的物品栏
+    public static void CreateNewItem(ItemData item, int count)
     {
-        Slot newItem = Instantiate(instance.sloPrefab, instance.slotGrid.transform.position, Quaternion.identity);
-        newItem.gameObject.gameObject.transform.SetParent(instance.slotGrid.transform);
+        Slot newItem = Instantiate(Instance.slotPrefab, Instance.slotGrid.transform);
         newItem.slotItem = item;
         newItem.slotImage.sprite = item.image;
-        newItem.slotIndex.text = item.itemHeld.ToString(); 
-    }
-
-    public static void RefreshItem()//用于检测获取重复物品时刷新数量
-    {
-        for (int i = 0; i < instance.slotGrid.transform.childCount; i++)
-        {
-            if (instance.slotGrid.transform.childCount == 0)
-                break;
-            Destroy(instance.slotGrid.transform.GetChild(i).gameObject);
-        }
-        for(int i = 0; i < instance.myBag.itemList.Count; i++)
-        {
-            CreateNewItem(instance.myBag.itemList[i]);
-        }
+        newItem.slotIndex.text = count.ToString(); // 显示数量
     }
 }

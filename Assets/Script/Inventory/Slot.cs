@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
-using TMPro.Examples;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,10 +5,13 @@ public class Slot : MonoBehaviour
 {
     public ItemData slotItem;
     public Image slotImage;
-    public Text slotIndex;
+    public Text slotIndex; // 如果你用的是TMP，这里改成 TMP_Text，并在上面脚本同步修改
 
     public void ItemOnClicked()
     {
-        InventoryManager.UpdateItemInformation(slotItem.itemInfo);
+        if (slotItem != null)
+        {
+            InventoryManager.UpdateItemInformation(slotItem.itemInfo);
+        }
     }
 }
