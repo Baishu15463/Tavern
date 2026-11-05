@@ -8,4 +8,5 @@ public class RecipeData : ScriptableObject
     public int basePrice;           // 基础售价
     public List<ItemData> item; // 需要的食材列表
     public Sprite icon;             // 菜品图标
+    public ItemData resultDish; // 做出来的成品
 }

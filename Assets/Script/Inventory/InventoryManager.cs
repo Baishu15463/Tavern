@@ -6,64 +6,52 @@ using UnityEngine.UI;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
-
     public GameObject slotGrid;
     public Slot slotPrefab;
-    public TMP_Text itemInformation;
+    public Text itemInformation;
+    public List<ItemData> allItemsDatabase; // 你的所有物品数据列表
 
-    // 用于在列表中查找对应的 ItemData SO模板
-    public List<ItemData> allItemsDatabase;
+    [Header("事件通道")]
+    public OnInventoryChangeSO onInventoryChanged;
 
-    private void Awake()
-    {
-        if (Instance != null) { Destroy(gameObject); return; }
-        Instance = this;
-    }
+    private void Awake() { Instance = this; }
 
     private void OnEnable()
     {
+        if (onInventoryChanged != null) onInventoryChanged.OnEventRaised += RefreshItem;
         RefreshItem();
-        if (itemInformation != null) itemInformation.text = "";
     }
 
-    public static void UpdateItemInformation(string itemInfo)
+    private void OnDisable()
     {
-        if (Instance != null && Instance.itemInformation != null)
-            Instance.itemInformation.text = itemInfo;
+        if (onInventoryChanged != null) onInventoryChanged.OnEventRaised -= RefreshItem;
     }
 
-    public static void RefreshItem()
+    public void RefreshItem()
     {
-        if (Instance == null || Instance.slotGrid == null) return;
+        if (slotGrid == null) return;
+        foreach (Transform child in slotGrid.transform) Destroy(child.gameObject);
 
-        // 1. 清空旧格子
-        foreach (Transform child in Instance.slotGrid.transform)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // 2. 遍历字典（真实库存）
+        // 遍历字典
         foreach (var kvp in GameDataManager.Instance.inventory)
         {
-            string itemName = kvp.Key;
+            int id = kvp.Key;       //  ID
             int count = kvp.Value;
 
             if (count <= 0) continue;
 
-            // 3. 去数据库找图标
-            ItemData data = Instance.allItemsDatabase.Find(x => x.itemName == itemName);
+            //  根据 ID 找对应的 ItemData
+            ItemData data = allItemsDatabase.Find(x => x.itemID == id);
+
             if (data != null)
             {
-                CreateNewItem(data, count);
+                Slot newItem = Instantiate(slotPrefab, slotGrid.transform);
+                newItem.slotItem = data;
+                newItem.slotImage.sprite = data.image;
+                newItem.slotIndex.text = count.ToString();
             }
         }
     }
 
-    public static void CreateNewItem(ItemData item, int count)
-    {
-        Slot newItem = Instantiate(Instance.slotPrefab, Instance.slotGrid.transform);
-        newItem.slotItem = item;
-        newItem.slotImage.sprite = item.image;
-        newItem.slotIndex.text = count.ToString(); // 显示数量
-    }
+
 }
