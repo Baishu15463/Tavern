@@ -17,5 +17,5 @@ MonoBehaviour:
   item:
   - {fileID: 11400000, guid: a07958f246484004a9a0713f4bd7e0e3, type: 2}
   - {fileID: 11400000, guid: 6617a0d7beb0038408479b94db45bc30, type: 2}
-  icon: {fileID: 21300000, guid: 6799506c29d98314997890af218b34d6, type: 3}
+  icon: {fileID: -472113930, guid: 6799506c29d98314997890af218b34d6, type: 3}
   resultDish: {fileID: 11400000, guid: 09dcaa420b630b74780c139c9a2c78b7, type: 2}

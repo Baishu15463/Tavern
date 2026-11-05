@@ -31,7 +31,16 @@ public class GameDataManager : MonoBehaviour
 
     private void HandleItemGained(ItemData item)
     {
+        if (item == null)
+        {
+            Debug.LogError("大喇叭响了，但传过来的物品是空的！检查菜谱的 Result Dish 有没有拖！");
+            return;
+        }
+
+        Debug.Log("数据中心收到物品：" + item.itemName + "，准备加进字典！"); // ★ 加这句
+
         AddItem(item, 1);
+
         if (onInventoryChanged != null) onInventoryChanged.RaiseEvent();
     }
 
